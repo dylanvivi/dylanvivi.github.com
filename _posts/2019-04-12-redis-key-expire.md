@@ -70,13 +70,14 @@ Redis会把有过期时间的key放在一个单独的字典里，默认每100ms�
 ### 复制
 
 > Master 删除 过期 key 之后，会向所有 Slave 服务器发送一个 DEL命令，从服务器收到之后，会删除这些 key。
+
 > Slave 在被动的读取过期键时，不会做出操作，而是继续返回该键，只有当 Master 发送 DEL 通知来，才会删除过期键，这是统一、中心化的键删除策略，保证主从服务器的数据一致性。
 
 #### 读写分离时出现数据不一致
 
 > 由于 Slave 不会主动删除过期 Key，对于做了读写分离的业务，有可能导致从库读取到过期的脏数据。
 
-![expireIfNeeded](https://lh6.googleusercontent.com/-fRkMstLYlY8/UoNRXu4nxQI/AAAAAAAABOU/Lp-uP48AdKQ/w595-h276-no/1334812160_1655.jpg)
+![image](/assets/post-images/expireIfNeeded.png)
 
 这是因为key的过期删除依赖于expireIfNeeded函数，这个函数在任何访问数据的操作中都会被调用并用来检测客户端访问的数据是否过期。
 
@@ -87,8 +88,15 @@ Redis会把有过期时间的key放在一个单独的字典里，默认每100ms�
 #### 如何避免
 
 1. 通过scan命令扫库：
+
 > 当Redis中的Key被scan的时候，相当于访问了该Key，同样也会做过期检测，充分发挥redis惰性删除的策略。这个方法能大大降低了脏数据读取的概率，但缺点也比较明显，会造成一定的数据库压力，谨慎合理使用，否则有可能影响线上业务的效率。
 
 2. 升级redis到新的版本：
+
 > 在redis 3.2-rc1版本中，增加了Key是否过期以及对主从库的判断，如果key已过期，当前访问的是Master则返回null；当前访问的是从库，且执行的是只读命令也返回null（老版本从库真实的返回该操作的结果，如果该key过期后主库没有删除）。
+
+![image](/assets/post-images/redisReadExpireKey.png)
+
+-- EOF --
+
 
