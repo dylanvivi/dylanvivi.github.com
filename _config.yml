@@ -1,7 +1,7 @@
 #markdown: rdiscount
 markdown: kramdown
 #markdown: redcarpet
-pygments: true
+highlighter: rouge
 safe: false
 permalink: /posts/:title.html
 exclude:
