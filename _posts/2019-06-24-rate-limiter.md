@@ -133,7 +133,6 @@ SmoothBursty中几个属性的含义
 一种解法是，开启一个定时任务，由定时任务持续生成令牌。这样的问题在于会极大的消耗系统资源，如某接口需要分别对每个用户做访问频率限制，假设系统中存在6W用户，则至多需要开启6W个定时任务来维持每个桶中的令牌数，这样的开销是巨大的。
 
 另一种是触发式添加令牌。在取令牌的时候，通过计算上一次添加令牌和当前的时间差，计算出这段时间应该添加的令牌数，然后往桶里添加，添加完令牌之后再执行取令牌逻辑。
-
 	curr_mill_second = 当前毫秒数
 	last_mill_second = 上一次添加令牌的毫秒数
 	r = 添加令牌的速率
@@ -156,22 +155,22 @@ SmoothBursty采用的是触发式添加令牌的方式，实现方法为resync(l
 该函数会在每次获取令牌之前调用，其实现思路为，若当前时间晚于nextFreeTicketMicros，则计算该段时间内可以生成多少令牌，将生成的令牌加入令牌桶中并更新数据。这样一来，只需要在获取令牌时计算一次即可。
 
 	final long reserveEarliestAvailable(int requiredPermits, long nowMicros) {
-	  resync(nowMicros);
-	  long returnValue = nextFreeTicketMicros; // 返回的是上次计算的nextFreeTicketMicros
-	  double storedPermitsToSpend = min(requiredPermits, this.storedPermits); // 可以消费的令牌数
-	  double freshPermits = requiredPermits - storedPermitsToSpend; // 还需要的令牌数
-	  long waitMicros =
-	      storedPermitsToWaitTime(this.storedPermits, storedPermitsToSpend)
-	          + (long) (freshPermits * stableIntervalMicros); // 根据freshPermits计算需要等待的时间
-	 
-	  this.nextFreeTicketMicros = LongMath.saturatedAdd(nextFreeTicketMicros, waitMicros); // 本次计算的nextFreeTicketMicros不返回
-	  this.storedPermits -= storedPermitsToSpend;
-	  return returnValue;
+		resync(nowMicros);
+		long returnValue = nextFreeTicketMicros; // 返回的是上次计算的nextFreeTicketMicros
+		double storedPermitsToSpend = min(requiredPermits, this.storedPermits); // 可以消费的令牌数
+		double freshPermits = requiredPermits - storedPermitsToSpend; // 还需要的令牌数
+		long waitMicros =
+		      storedPermitsToWaitTime(this.storedPermits, storedPermitsToSpend)
+		          + (long) (freshPermits * stableIntervalMicros); // 根据freshPermits计算需要等待的时间
+		 
+		this.nextFreeTicketMicros = LongMath.saturatedAdd(nextFreeTicketMicros, waitMicros); // 本次计算的nextFreeTicketMicros不返回
+		this.storedPermits -= storedPermitsToSpend;
+		return returnValue;
 	}
 
 该函数用于获取requiredPermits个令牌，并返回需要等待到的时间点。其中，storedPermitsToSpend为桶中可以消费的令牌数，freshPermits为还需要的(需要补充的)令牌数，根据该值计算需要等待的时间，追加并更新到nextFreeTicketMicros。
 
-需要注意的是，该函数的返回是更新前的（上次请求计算的）nextFreeTicketMicros，而不是本次更新的nextFreeTicketMicros，也就是说，本次请求需要为上次请求的预消费行为埋单，这也是RateLimiter可以预消费(处理突发)的原理所在。若需要禁止预消费，则修改此处返回更新后的nextFreeTicketMicros值。
+需要注意的是，该函数的返回是更新前的（上次请求计算的）nextFreeTicketMicros，而不是本次更新的nextFreeTicketMicros，也就是说，**本次请求需要为上次请求的预消费行为埋单**，这也是RateLimiter可以预消费(处理突发)的原理所在。若需要禁止预消费，则修改此处返回更新后的nextFreeTicketMicros值。
 
 
 
@@ -179,19 +178,19 @@ SmoothBursty采用的是触发式添加令牌的方式，实现方法为resync(l
 
 redis 4.0中提供了redis-cell模块（需安装），基于令牌桶算法实现。
 
-官方wiki：[https://github.com/brandur/redis-cell]
+[官方wiki](https://github.com/brandur/redis-cell)
 
 命令：`CL.THROTTLE`
 
 `CL.THROTTLE user123 15 30 60 3`
 
 	user123： redis key
-	15： 官方叫max_burst，其值为令牌桶的容量 - 1， 首次执行时令牌桶会默认填满
-	30： 与下一个参数一起，表示在指定时间窗口内允许访问的次数
-	60： 指定的时间窗口，单位：秒
+	15：官方叫max_burst，其值为令牌桶的容量 - 1， 首次执行时令牌桶会默认填满
+	30：与下一个参数一起，表示在指定时间窗口内允许访问的次数
+	60：指定的时间窗口，单位：秒
 	3： 表示本次要申请的令牌数，不写则默认为 1
 
-以上命令表示从一个初始值为15的令牌桶中取3个令牌，该令牌桶的速率限制为30次/60秒。
+以上命令表示**从一个初始值为15的令牌桶中取3个令牌，该令牌桶的速率限制为30次/60秒。**
 
 	127.0.0.1:6379> CL.THROTTLE user123 15 30 60
 	1) (integer) 0
@@ -200,8 +199,9 @@ redis 4.0中提供了redis-cell模块（需安装），基于令牌桶算法实�
 	4) (integer) -1
 	5) (integer) 2
 
-1. 是否成功，0：成功，1：拒绝
-2. 令牌桶的容量，大小为初始值+1
-3. 当前令牌桶中可用的令牌
-4. 若请求被拒绝，这个值表示多久后才令牌桶中会重新添加令牌，单位：秒，可以作为重试时间
-5. 表示多久后令牌桶中的令牌会存满
+返回值含义：
+	1. 是否成功，0：成功，1：拒绝
+	2. 令牌桶的容量，大小为初始值+1
+	3. 当前令牌桶中可用的令牌
+	4. 若请求被拒绝，这个值表示多久后才令牌桶中会重新添加令牌，单位：秒，可以作为重试时间
+	5. 表示多久后令牌桶中的令牌会存满
