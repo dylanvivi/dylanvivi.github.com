@@ -46,7 +46,7 @@ title : 限流
 
 漏桶有两种实现，一种是 as a meter，另一种是 as a queue。
 
-*As a meter*
+**As a meter**
 
 第一种实现是和令牌桶等价的，只是表述角度不同。
 
@@ -56,7 +56,7 @@ title : 限流
 	可以以任意速率流入水滴到漏桶；
 	如果流入水滴超出了桶的容量，则流入的水滴溢出了（被丢弃），而漏桶容量是不变的。
 
-*As a queue*
+**As a queue**
 
 第二种实现是用一个队列实现，当请求到来时如果队列没满则加入到队列中，否则拒绝掉新的请求。同时会以恒定的速率从队列中取出请求执行。
 
@@ -84,15 +84,15 @@ RateLimiter有两种限流模式，一种为稳定模式（SmoothBursty 令牌�
 
 这里有段注释：
 
-/**
-* Last, but not least: consider a RateLimiter with rate of 1 permit per second, currently
-* completely unused, and an expensive acquire(100) request comes. It would be nonsensical
-* to just wait for 100 seconds, and /then/ start the actual task. Why wait without doing
-* anything? A much better approach is to /allow/ the request right away (as if it was an
-* acquire(1) request instead), and postpone /subsequent/ requests as needed. In this version,
-* we allow starting the task immediately, and postpone by 100 seconds future requests,
-* thus we allow for work to get done in the meantime instead of waiting idly.
-**/
+	/**
+	* Last, but not least: consider a RateLimiter with rate of 1 permit per second, currently
+	* completely unused, and an expensive acquire(100) request comes. It would be nonsensical
+	* to just wait for 100 seconds, and /then/ start the actual task. Why wait without doing
+	* anything? A much better approach is to /allow/ the request right away (as if it was an
+	* acquire(1) request instead), and postpone /subsequent/ requests as needed. In this version,
+	* we allow starting the task immediately, and postpone by 100 seconds future requests,
+	* thus we allow for work to get done in the meantime instead of waiting idly.
+	**/
 
 以上，表明这个版本的RateLimiter会预消费后续的流量额度。比如调用acquire(100)，而限制的qps是10，在未被限流情况下，RateLimiter会通过这个acquire(100)，而不是被阻塞。之后的10秒内的acquire()才会被阻塞住。
 
@@ -100,34 +100,33 @@ RateLimiter有两种限流模式，一种为稳定模式（SmoothBursty 令牌�
 
 SmoothBursty中几个属性的含义
 
-/**
- * The currently stored permits.
- * 当前存储令牌数
- */
-double storedPermits;
- 
-/**
- * The maximum number of stored permits.
- * 最大存储令牌数
- */
-double maxPermits;
- 
-/**
- * The interval between two unit requests, at our stable rate. E.g., a stable rate of 5 permits
- * per second has a stable interval of 200ms.
- * 添加令牌时间间隔
- */
-double stableIntervalMicros;
- 
-/**
- * The time when the next request (no matter its size) will be granted. After granting a request,
- * this is pushed further in the future. Large requests push this further than small requests.
- * 下一次请求可以获取令牌的起始时间
- * 由于RateLimiter允许预消费，上次请求预消费令牌后
- * 下次请求需要等待相应的时间到nextFreeTicketMicros时刻才可以获取令牌
- */
-private long nextFreeTicketMicros = 0L; // could be either in the past or future
-
+	/**
+	 * The currently stored permits.
+	 * 当前存储令牌数
+	 */
+	double storedPermits;
+	 
+	/**
+	 * The maximum number of stored permits.
+	 * 最大存储令牌数
+	 */
+	double maxPermits;
+	 
+	/**
+	 * The interval between two unit requests, at our stable rate. E.g., a stable rate of 5 permits
+	 * per second has a stable interval of 200ms.
+	 * 添加令牌时间间隔
+	 */
+	double stableIntervalMicros;
+	 
+	/**
+	 * The time when the next request (no matter its size) will be granted. After granting a request,
+	 * this is pushed further in the future. Large requests push this further than small requests.
+	 * 下一次请求可以获取令牌的起始时间
+	 * 由于RateLimiter允许预消费，上次请求预消费令牌后
+	 * 下次请求需要等待相应的时间到nextFreeTicketMicros时刻才可以获取令牌
+	 */
+	private long nextFreeTicketMicros = 0L; // could be either in the past or future
 
 根据令牌桶算法，桶中的令牌是持续生成存放的，有请求时需要先从桶中拿到令牌才能开始执行，谁来持续生成令牌存放呢？
 
@@ -142,33 +141,33 @@ private long nextFreeTicketMicros = 0L; // could be either in the past or future
 
 SmoothBursty采用的是触发式添加令牌的方式，实现方法为resync(long nowMicros)
 
-/**
- * Updates {@code storedPermits} and {@code nextFreeTicketMicros} based on the current time.
- */
-void resync(long nowMicros) {
-    // if nextFreeTicket is in the past, resync to now
-    if (nowMicros > nextFreeTicketMicros) {
-      double newPermits = (nowMicros - nextFreeTicketMicros) / coolDownIntervalMicros();
-      storedPermits = min(maxPermits, storedPermits + newPermits);
-      nextFreeTicketMicros = nowMicros;
-    }
-}
+	/**
+	 * Updates {@code storedPermits} and {@code nextFreeTicketMicros} based on the current time.
+	 */
+	void resync(long nowMicros) {
+	    // if nextFreeTicket is in the past, resync to now
+	    if (nowMicros > nextFreeTicketMicros) {
+	      double newPermits = (nowMicros - nextFreeTicketMicros) / coolDownIntervalMicros();
+	      storedPermits = min(maxPermits, storedPermits + newPermits);
+	      nextFreeTicketMicros = nowMicros;
+	    }
+	}
 
 该函数会在每次获取令牌之前调用，其实现思路为，若当前时间晚于nextFreeTicketMicros，则计算该段时间内可以生成多少令牌，将生成的令牌加入令牌桶中并更新数据。这样一来，只需要在获取令牌时计算一次即可。
 
-final long reserveEarliestAvailable(int requiredPermits, long nowMicros) {
-  resync(nowMicros);
-  long returnValue = nextFreeTicketMicros; // 返回的是上次计算的nextFreeTicketMicros
-  double storedPermitsToSpend = min(requiredPermits, this.storedPermits); // 可以消费的令牌数
-  double freshPermits = requiredPermits - storedPermitsToSpend; // 还需要的令牌数
-  long waitMicros =
-      storedPermitsToWaitTime(this.storedPermits, storedPermitsToSpend)
-          + (long) (freshPermits * stableIntervalMicros); // 根据freshPermits计算需要等待的时间
- 
-  this.nextFreeTicketMicros = LongMath.saturatedAdd(nextFreeTicketMicros, waitMicros); // 本次计算的nextFreeTicketMicros不返回
-  this.storedPermits -= storedPermitsToSpend;
-  return returnValue;
-}
+	final long reserveEarliestAvailable(int requiredPermits, long nowMicros) {
+	  resync(nowMicros);
+	  long returnValue = nextFreeTicketMicros; // 返回的是上次计算的nextFreeTicketMicros
+	  double storedPermitsToSpend = min(requiredPermits, this.storedPermits); // 可以消费的令牌数
+	  double freshPermits = requiredPermits - storedPermitsToSpend; // 还需要的令牌数
+	  long waitMicros =
+	      storedPermitsToWaitTime(this.storedPermits, storedPermitsToSpend)
+	          + (long) (freshPermits * stableIntervalMicros); // 根据freshPermits计算需要等待的时间
+	 
+	  this.nextFreeTicketMicros = LongMath.saturatedAdd(nextFreeTicketMicros, waitMicros); // 本次计算的nextFreeTicketMicros不返回
+	  this.storedPermits -= storedPermitsToSpend;
+	  return returnValue;
+	}
 
 该函数用于获取requiredPermits个令牌，并返回需要等待到的时间点。其中，storedPermitsToSpend为桶中可以消费的令牌数，freshPermits为还需要的(需要补充的)令牌数，根据该值计算需要等待的时间，追加并更新到nextFreeTicketMicros。
 
@@ -182,33 +181,27 @@ redis 4.0中提供了redis-cell模块（需安装），基于令牌桶算法实�
 
 官方wiki：[https://github.com/brandur/redis-cell]
 
-命令：CL.THROTTLE
+命令：`CL.THROTTLE`
 
-CL.THROTTLE user123 15 30 60 3
-user123： redis key
+`CL.THROTTLE user123 15 30 60 3`
 
-15： 官方叫max_burst，其值为令牌桶的容量 - 1， 首次执行时令牌桶会默认填满
-
-30： 与下一个参数一起，表示在指定时间窗口内允许访问的次数
-
-60： 指定的时间窗口，单位：秒
-
-3： 表示本次要申请的令牌数，不写则默认为 1
+	user123： redis key
+	15： 官方叫max_burst，其值为令牌桶的容量 - 1， 首次执行时令牌桶会默认填满
+	30： 与下一个参数一起，表示在指定时间窗口内允许访问的次数
+	60： 指定的时间窗口，单位：秒
+	3： 表示本次要申请的令牌数，不写则默认为 1
 
 以上命令表示从一个初始值为15的令牌桶中取3个令牌，该令牌桶的速率限制为30次/60秒。
 
+	127.0.0.1:6379> CL.THROTTLE user123 15 30 60
+	1) (integer) 0
+	2) (integer) 16
+	3) (integer) 15
+	4) (integer) -1
+	5) (integer) 2
 
-
-127.0.0.1:6379> CL.THROTTLE user123 15 30 60
-1) (integer) 0
-2) (integer) 16
-3) (integer) 15
-4) (integer) -1
-5) (integer) 2
-
-
-1) 是否成功，0：成功，1：拒绝
-2) 令牌桶的容量，大小为初始值+1
-3) 当前令牌桶中可用的令牌
-4) 若请求被拒绝，这个值表示多久后才令牌桶中会重新添加令牌，单位：秒，可以作为重试时间
-5) 表示多久后令牌桶中的令牌会存满
+1. 是否成功，0：成功，1：拒绝
+2. 令牌桶的容量，大小为初始值+1
+3. 当前令牌桶中可用的令牌
+4. 若请求被拒绝，这个值表示多久后才令牌桶中会重新添加令牌，单位：秒，可以作为重试时间
+5. 表示多久后令牌桶中的令牌会存满
