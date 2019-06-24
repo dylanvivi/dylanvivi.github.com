@@ -137,10 +137,10 @@ SmoothBursty中几个属性的含义
 
 - 另一种是触发式添加令牌。在取令牌的时候，通过计算上一次添加令牌和当前的时间差，计算出这段时间应该添加的令牌数，然后往桶里添加，添加完令牌之后再执行取令牌逻辑。
 
--- curr_mill_second = 当前毫秒数
--- last_mill_second = 上一次添加令牌的毫秒数
--- r = 添加令牌的速率
--- reserve_permits = (curr_mill_second-last_mill_second)/1000 * r
+	- curr_mill_second = 当前毫秒数
+	- last_mill_second = 上一次添加令牌的毫秒数
+	- r = 添加令牌的速率
+	- reserve_permits = (curr_mill_second-last_mill_second)/1000 * r
 
 SmoothBursty采用的是触发式添加令牌的方式，实现方法为resync(long nowMicros)
 
@@ -180,7 +180,7 @@ SmoothBursty采用的是触发式添加令牌的方式，实现方法为resync(l
 
 redis 4.0中提供了redis-cell模块（需安装），基于令牌桶算法实现。
 
-[官方wiki](https://github.com/brandur/redis-cell)
+官方wiki:[https://github.com/brandur/redis-cell](https://github.com/brandur/redis-cell)
 
 命令：`CL.THROTTLE`
 
