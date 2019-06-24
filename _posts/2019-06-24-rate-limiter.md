@@ -99,8 +99,6 @@ RateLimiter有两种限流模式，一种为稳定模式（SmoothBursty 令牌�
 
 以上，表明这个版本的RateLimiter会预消费后续的流量额度。比如调用acquire(100)，而限制的qps是10，在未被限流情况下，RateLimiter会通过这个acquire(100)，而不是被阻塞。之后的10秒内的acquire()才会被阻塞住。
 
-
-
 SmoothBursty中几个属性的含义
 
 	/**
