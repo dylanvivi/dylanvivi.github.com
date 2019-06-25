@@ -4,7 +4,7 @@ body{line-height:1.6em; font-family:Helvetica, Arial, sans-serif; color:#555;}
 a{margin:0 2px; color:#06c; text-decoration:none;}
 a:hover{text-decoration:underline;}
 h1 a,h2 a,h3 a,h4 a,h5 a,h6 a{margin:0;}
-img{border:0;}
+img{border:0; max-width: 60%;}
 input,textarea{resize:none;}
 
 @media screen and (min-width:1024px) {
