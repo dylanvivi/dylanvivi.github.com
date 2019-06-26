@@ -164,17 +164,17 @@ void resync(long nowMicros) {
 
 ~~~~~JAVA
 final long reserveEarliestAvailable(int requiredPermits, long nowMicros) {
-	resync(nowMicros);
-	long returnValue = nextFreeTicketMicros; // 返回的是上次计算的nextFreeTicketMicros
-	double storedPermitsToSpend = min(requiredPermits, this.storedPermits); // 可以消费的令牌数
-	double freshPermits = requiredPermits - storedPermitsToSpend; // 还需要的令牌数
-	long waitMicros =
-	      storedPermitsToWaitTime(this.storedPermits, storedPermitsToSpend)
-	          + (long) (freshPermits * stableIntervalMicros); // 根据freshPermits计算需要等待的时间
+    resync(nowMicros);
+    long returnValue = nextFreeTicketMicros; // 返回的是上次计算的nextFreeTicketMicros
+    double storedPermitsToSpend = min(requiredPermits, this.storedPermits); // 可以消费的令牌数
+    double freshPermits = requiredPermits - storedPermitsToSpend; // 还需要的令牌数
+    long waitMicros =
+          storedPermitsToWaitTime(this.storedPermits, storedPermitsToSpend)
+              + (long) (freshPermits * stableIntervalMicros); // 根据freshPermits计算需要等待的时间
 	 
-	this.nextFreeTicketMicros = LongMath.saturatedAdd(nextFreeTicketMicros, waitMicros); // 本次计算的nextFreeTicketMicros不返回
-	this.storedPermits -= storedPermitsToSpend;
-	return returnValue;
+    this.nextFreeTicketMicros = LongMath.saturatedAdd(nextFreeTicketMicros, waitMicros); // 本次计算的nextFreeTicketMicros不返回
+    this.storedPermits -= storedPermitsToSpend;
+    return returnValue;
 }
 ~~~~~
 
