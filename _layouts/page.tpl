@@ -19,12 +19,12 @@
 	{{ content }}
 
 	<footer>
-		<p>&copy; Since 2012 <a href="http://github.com/dylanvivi" target="_blank">github.com/dylanvivi</a></p>
+		<p>&copy; Since 2012 <a href="https://github.com/dylanvivi" target="_blank">github.com/dylanvivi</a></p>
 	</footer>
 </div>
 
 <aside>
-	<h2><a href="/">{{ site.name }}</a><a href="/feed.xml" class="feed-link" title="Subscribe"><img src="http://blog.rexsong.com/wp-content/themes/rexsong/icon_feed.gif" alt="RSS feed" /></a></h2>
+	<h2><a href="/">{{ site.name }}</a><a href="/feed.xml" class="feed-link" title="Subscribe"><img src="rss.png" alt="RSS feed" /></a></h2>
 	<nav class="block">
 		<ul>
 		{% for category in site.custom.categories %}<li class="{{ category.name }}"><a href="/category/{{ category.name }}/">{{ category.title }}</a></li>
