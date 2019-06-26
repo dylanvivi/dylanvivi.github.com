@@ -6,9 +6,9 @@
 <meta name="keywords" content="{{ page.tags | join: ',' }}" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>{{ site.name }}{% if page.title %} / {{ page.title }}{% endif %}</title>
-<link href="http://{{ site.host }}/feed.xml" rel="alternate" title="{{ site.name }}" type="application/atom+xml" />
+<link href="https://{{ site.host }}/feed.xml" rel="alternate" title="{{ site.name }}" type="application/atom+xml" />
 <link rel="stylesheet" type="text/css" href="/assets/css/site.css" />
-<link rel="stylesheet" type="text/css" href="/assets/highlight/styles/github.css" />
+<link rel="stylesheet" type="text/css" href="/assets/css/code/github.css" />
 {% for style in page.styles %}<link rel="stylesheet" type="text/css" href="{{ style }}" />
 {% endfor %}
 </head>
@@ -48,7 +48,7 @@
 	
 	<div class="block block-license">
 		<h3>版权申明</h3>
-		<p><a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/2.5/cn/" target="_blank" class="hide-target-icon" title="本站(博客)作品全部采用知识共享署名-非商业性使用-禁止演绎 2.5 中国大陆许可协议进行许可。转载请通知作者并注明出处。"><img alt="知识共享许可协议" src="http://i.creativecommons.org/l/by-nc-nd/2.5/cn/88x31.png" /></a></p>
+		<p><a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/2.5/cn/" target="_blank" class="hide-target-icon" title="本站(博客)作品全部采用知识共享署名-非商业性使用-禁止演绎 2.5 中国大陆许可协议进行许可。转载请通知作者并注明出处。"><img alt="知识共享许可协议" src="https://i.creativecommons.org/l/by-nc-nd/2.5/cn/88x31.png" /></a></p>
 	</div>
 	
 	{% if site.meta.author.github %}
@@ -72,15 +72,15 @@
 	</div>
 </aside>
 
-<script src="http://elfjs.googlecode.com/files/elf-0.4.1-min.js"></script>
-<script src="/assets/highlight/highlight.pack.js"></script>
+<script src="/assets/js/elf-0.5.0.min.js"></script>
+<script src="/assets/js/highlight.pack.js"></script>
 <script src="/assets/js/site.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
 {% for script in page.scripts %}<script src="{{ script }}"></script>
 {% endfor %}
 <script>
 site.URL_GOOGLE_API = '{{site.meta.gapi}}';
-site.URL_DISCUS_COMMENT = '{{ site.meta.author.disqus }}' ? 'http://{{ site.meta.author.disqus }}.{{ site.meta.disqus }}' : '';
+site.URL_DISCUS_COMMENT = '{{ site.meta.author.disqus }}' ? 'https://{{ site.meta.author.disqus }}.{{ site.meta.disqus }}' : '';
 
 site.VAR_SITE_NAME = '{{ site.name }}';
 site.VAR_GOOGLE_CUSTOM_SEARCH_ID = '{{ site.meta.author.gcse }}';
