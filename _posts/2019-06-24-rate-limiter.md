@@ -87,7 +87,8 @@ RateLimiter有两种限流模式，一种为稳定模式（SmoothBursty 令牌�
 
 这里有段注释：
 
-	/**
+~~~~~JAVA
+/**
 	* Last, but not least: consider a RateLimiter with rate of 1 permit per second, currently
 	* completely unused, and an expensive acquire(100) request comes. It would be nonsensical
 	* to just wait for 100 seconds, and /then/ start the actual task. Why wait without doing
@@ -95,12 +96,14 @@ RateLimiter有两种限流模式，一种为稳定模式（SmoothBursty 令牌�
 	* acquire(1) request instead), and postpone /subsequent/ requests as needed. In this version,
 	* we allow starting the task immediately, and postpone by 100 seconds future requests,
 	* thus we allow for work to get done in the meantime instead of waiting idly.
-	**/
+**/
+~~~~~
 
 以上，表明这个版本的RateLimiter会预消费后续的流量额度。比如调用acquire(100)，而限制的qps是10，在未被限流情况下，RateLimiter会通过这个acquire(100)，而不是被阻塞。之后的10秒内的acquire()才会被阻塞住。
 
 SmoothBursty中几个属性的含义
 
+~~~~~JAVA
 	/**
 	 * The currently stored permits.
 	 * 当前存储令牌数
@@ -128,6 +131,7 @@ SmoothBursty中几个属性的含义
 	 * 下次请求需要等待相应的时间到nextFreeTicketMicros时刻才可以获取令牌
 	 */
 	private long nextFreeTicketMicros = 0L; // could be either in the past or future
+~~~~~~~
 
 根据令牌桶算法，桶中的令牌是持续生成存放的，有请求时需要先从桶中拿到令牌才能开始执行，谁来持续生成令牌存放呢？
 
