@@ -1,5 +1,3 @@
-
-[Disqus]: http://disqus.com/
 [elf+js]: http://elfjs.com/
 [ER]: http://www.errorrik.com/er/
 [Express]: http://expressjs.com/

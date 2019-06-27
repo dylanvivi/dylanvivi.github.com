@@ -15,6 +15,7 @@ custom:
     category:
         notes: 学习笔记
         problems: 遇到问题
+        todo: 草稿箱
     categories:
       - name:  notes
         title: 学习笔记
@@ -22,15 +23,16 @@ custom:
       - name:  problems
         title: 遇到问题
 
+      - name:  todo
+        title: 草稿箱
+
 meta:
     author:
         name: Dylan
         email: dylanvivi@gmail.com
-        disqus: dylanvivi 			                # Disqus缩略标识
         gcse: 002980071478006019237:bcmd-n00ura     # Google自定义搜索标识ID
         github: dylanvivi              			    # GitHub账号
         gravatar: b1b40161ebd87b851d3eb65e870f1213  # Gravatar头像标识
 
-    disqus: disqus.com/embed.js                     # Disqus评论的JS地址
     gapi: https://www.google.com/jsapi               # Google API地址
     gravatar: https://en.gravatar.com/avatar/        # Gravatar头像服务器地址
